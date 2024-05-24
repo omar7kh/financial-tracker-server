@@ -19,7 +19,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
+const PORT = 4000;
 
 // Routes
 app.get('/health', (req, res) => {
