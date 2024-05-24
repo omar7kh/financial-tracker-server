@@ -5,6 +5,7 @@ import 'dotenv/config';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// LOGIN
 export const login = async (req, res) => {
   try {
     const user = await UserModel.findOne({ email: req.body.email });
@@ -26,11 +27,20 @@ export const login = async (req, res) => {
       });
 
       res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        httpOnly: false,
+        secure: false,
+        sameSite: false,
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
+
+      // THE RENDER DOES NOT ACCEPT COOKIES ON RENDER DOMAIN, IT HAS TO BE ON OWN DOMAIN
+
+      // res.cookie('jwt', token, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === 'production',
+      //   sameSite: 'strict',
+      //   maxAge: 30 * 24 * 60 * 60 * 1000,
+      // });
 
       res.send(user);
     });
@@ -40,6 +50,7 @@ export const login = async (req, res) => {
   }
 };
 
+// SIGNUP
 export const signup = async (req, res) => {
   try {
     const existingUser = await UserModel.findOne({ email: req.body.email });
@@ -63,6 +74,7 @@ export const signup = async (req, res) => {
   }
 };
 
+// UPDATE USER
 export const updateUser = async (req, res) => {
   const { email, firstName, lastName, currentPassword, newPassword } = req.body;
   try {
@@ -112,4 +124,14 @@ export const updateUser = async (req, res) => {
     console.error(error);
     res.status(500).json('something went wrong');
   }
+};
+
+// LOGOUT
+export const logout = (req, res) => {
+  res.clearCookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
+  res.status(200).json({ message: 'logged out' });
 };
