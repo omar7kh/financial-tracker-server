@@ -13,34 +13,25 @@ export const login = async (req, res) => {
     if (!user) {
       return res
         .status(401)
-        .json({ message: 'email or Password are not correct' });
+        .json({ message: 'Email or Password are not correct' });
     }
 
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if (!result) {
         return res
           .status(401)
-          .json({ message: 'email or Password are not correct' });
+          .json({ message: 'Email or Password are not correct' });
       }
       const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
         expiresIn: '30d',
       });
 
       res.cookie('jwt', token, {
-        httpOnly: false,
-        secure: false,
-        sameSite: false,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'None',
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
-
-      // THE RENDER DOES NOT ACCEPT COOKIES ON RENDER DOMAIN, IT HAS TO BE ON OWN DOMAIN
-
-      // res.cookie('jwt', token, {
-      //   httpOnly: true,
-      //   secure: process.env.NODE_ENV === 'production',
-      //   sameSite: 'strict',
-      //   maxAge: 30 * 24 * 60 * 60 * 1000,
-      // });
 
       res.send(user);
     });
@@ -128,10 +119,10 @@ export const updateUser = async (req, res) => {
 
 // LOGOUT
 export const logout = (req, res) => {
-  res.clearCookie('jwt', '', {
+  res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),
   });
 
-  res.status(200).json({ message: 'logged out' });
+  res.json({ message: 'logged out' });
 };
