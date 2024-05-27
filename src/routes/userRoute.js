@@ -10,13 +10,14 @@ import {
   validateLogin,
   validateSignupRequest,
 } from '../middlewares/validation.js';
+import limiter from '../middlewares/loginLimiter.js';
 
 const router = express.Router();
 
 router.get('/auth', jwtCheck, (req, res) =>
   res.json({ message: 'authorized' })
 );
-router.post('/login', validateLogin, login);
+router.post('/login', validateLogin, limiter, login);
 router.post('/signup', validateSignupRequest, signup);
 router.put('/', jwtCheck, updateUser);
 router.post('/logout', jwtCheck, logout);
