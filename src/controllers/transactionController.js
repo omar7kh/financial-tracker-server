@@ -65,6 +65,8 @@ export const editTransaction = async (req, res) => {
 // DELETE TRANSACTION
 export const deleteTransaction = async (req, res) => {
   const { ids } = req.body;
+  console.log(ids);
+
   try {
     const userTransactions = await TransactionModel.find({
       user: req.userId,
