@@ -4,9 +4,9 @@ import {
   creteTransaction,
   editTransaction,
   deleteTransaction,
-} from '../controllers/transactionController.js';
-import { jwtCheck } from '../middlewares/isAuth.js';
-import { validateTransactionRequest } from '../middlewares/validation.js';
+} from '../controllers/transactionController';
+import { jwtCheck } from '../middlewares/isAuth';
+import { validateTransactionRequest } from '../middlewares/validation';
 
 const router = express.Router();
 

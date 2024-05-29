@@ -4,13 +4,13 @@ import {
   logout,
   signup,
   updateUser,
-} from '../controllers/userController.js';
-import { jwtCheck } from '../middlewares/isAuth.js';
+} from '../controllers/userController';
+import { jwtCheck } from '../middlewares/isAuth';
 import {
   validateLogin,
   validateSignupRequest,
-} from '../middlewares/validation.js';
-import limiter from '../middlewares/loginLimiter.js';
+} from '../middlewares/validation';
+import limiter from '../middlewares/loginLimiter';
 
 const router = express.Router();
 

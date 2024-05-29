@@ -1,12 +1,13 @@
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import UserModel from '../models/userModel.js';
+import UserModel from '../models/userModel';
 import 'dotenv/config';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 // LOGIN
-export const login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const user = await UserModel.findOne({ email: req.body.email });
 
@@ -16,25 +17,30 @@ export const login = async (req, res) => {
         .json({ message: 'Email or Password are not correct' });
     }
 
-    bcrypt.compare(req.body.password, user.password, (err, result) => {
-      if (!result) {
-        return res
-          .status(401)
-          .json({ message: 'Email or Password are not correct' });
+    bcrypt.compare(
+      req.body.password,
+      user.password as string,
+      (err: Error | undefined, result: boolean) => {
+        if (err || !result) {
+          return res
+            .status(401)
+            .json({ message: 'Email or Password are not correct' });
+        }
+
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
+          expiresIn: '30d',
+        });
+
+        res.cookie('jwt', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== 'development',
+          sameSite: process.env.NODE_ENV === 'development' ? 'strict' : 'none',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
+
+        res.send(user);
       }
-      const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-        expiresIn: '30d',
-      });
-
-      res.cookie('jwt', token, {
-        httpOnly: true,
-        secure: !process.env.NODE_ENV === 'development',
-        sameSite: process.env.NODE_ENV === 'development' ? 'Strict' : 'None',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
-
-      res.send(user);
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json('something went wrong');
@@ -42,7 +48,7 @@ export const login = async (req, res) => {
 };
 
 // SIGNUP
-export const signup = async (req, res) => {
+export const signup = async (req: Request, res: Response) => {
   try {
     const existingUser = await UserModel.findOne({ email: req.body.email });
 
@@ -66,28 +72,33 @@ export const signup = async (req, res) => {
 };
 
 // UPDATE USER
-export const updateUser = async (req, res) => {
+export const updateUser = async (req: Request, res: Response) => {
   const { email, firstName, lastName, currentPassword, newPassword } = req.body;
   try {
     const userToUpdate = await UserModel.findByIdAndUpdate(req.userId);
-    let updatedFields = {};
 
-    if (email && email !== userToUpdate.email) {
+    if (!userToUpdate) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const updatedFields: Partial<typeof userToUpdate> = {};
+
+    if (email && email !== userToUpdate?.email) {
       updatedFields.email = email;
     }
 
-    if (firstName && firstName !== userToUpdate.firstName) {
+    if (firstName && firstName !== userToUpdate?.firstName) {
       updatedFields.firstName = firstName;
     }
 
-    if (lastName && lastName !== userToUpdate.lastName) {
+    if (lastName && lastName !== userToUpdate?.lastName) {
       updatedFields.lastName = lastName;
     }
 
     if (currentPassword && newPassword) {
       const isPasswordCorrect = await bcrypt.compare(
         currentPassword,
-        userToUpdate.password
+        userToUpdate?.password as string
       );
 
       if (!isPasswordCorrect) {
@@ -97,20 +108,11 @@ export const updateUser = async (req, res) => {
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      updatedFields.password = hashedPassword;
+      userToUpdate.password = hashedPassword;
     }
 
-    if (Object.keys(updatedFields).length === 0) {
-      return res.status(400).json({ error: 'No valid fields to update' });
-    }
-
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      req.userId,
-      updatedFields,
-      { new: true }
-    );
-
-    res.send(updatedUser);
+    await userToUpdate.save();
+    res.send(userToUpdate);
   } catch (error) {
     console.error(error);
     res.status(500).json('something went wrong');
@@ -118,7 +120,7 @@ export const updateUser = async (req, res) => {
 };
 
 // LOGOUT
-export const logout = (req, res) => {
+export const logout = (req: Request, res: Response) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),

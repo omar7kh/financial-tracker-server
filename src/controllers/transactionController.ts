@@ -1,7 +1,8 @@
-import TransactionModel from '../models/transaction.js';
+import { Request, Response } from 'express';
+import TransactionModel from '../models/transaction';
 
 // GET TRANSACTION DATA
-export const getTransactionData = async (req, res) => {
+export const getTransactionData = async (req: Request, res: Response) => {
   try {
     const expensesData = await TransactionModel.find({ user: req.userId });
 
@@ -17,7 +18,7 @@ export const getTransactionData = async (req, res) => {
 };
 
 // CREATE TRANSACTION
-export const creteTransaction = async (req, res) => {
+export const creteTransaction = async (req: Request, res: Response) => {
   const { amount, date, category } = req.body;
   console.log(req.body);
 
@@ -37,7 +38,7 @@ export const creteTransaction = async (req, res) => {
 };
 
 // EDIT TRANSACTION
-export const editTransaction = async (req, res) => {
+export const editTransaction = async (req: Request, res: Response) => {
   const { _id, category, date, amount } = req.body;
 
   try {
@@ -63,7 +64,7 @@ export const editTransaction = async (req, res) => {
 };
 
 // DELETE TRANSACTION
-export const deleteTransaction = async (req, res) => {
+export const deleteTransaction = async (req: Request, res: Response) => {
   const { ids } = req.body;
   console.log(ids);
 

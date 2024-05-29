@@ -1,11 +1,12 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { MDBConnect } from './mongoDB/connectMongoDB.js';
-import userRoute from './routes/userRoute.js';
-import transactionsRoute from './routes/transactionRoute.js';
+import { MDBConnect } from './mongoDB/connectMongoDB';
+import userRoute from './routes/userRoute';
+import transactionsRoute from './routes/transactionRoute';
 
+const PORT = 4000;
 const app = express();
 
 // Middleware
@@ -19,10 +20,8 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-const PORT = 4000;
-
 // Routes
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.send('Server is running');
 });
 
@@ -33,4 +32,4 @@ app.use('/api/transaction', transactionsRoute);
 MDBConnect();
 
 // Server
-app.listen(PORT, console.log(`server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`server running on port ${PORT}`));
