@@ -17,30 +17,29 @@ export const login = async (req: Request, res: Response) => {
         .json({ message: 'Email or Password are not correct' });
     }
 
-    bcrypt.compare(
+    const checkPassword = bcrypt.compare(
       req.body.password,
-      user.password as string,
-      (err: Error | undefined, result: boolean) => {
-        if (err || !result) {
-          return res
-            .status(401)
-            .json({ message: 'Email or Password are not correct' });
-        }
-
-        const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-          expiresIn: '30d',
-        });
-
-        res.cookie('jwt', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV !== 'development',
-          sameSite: process.env.NODE_ENV === 'development' ? 'strict' : 'none',
-          maxAge: 30 * 24 * 60 * 60 * 1000,
-        });
-
-        res.send(user);
-      }
+      user.password as string
     );
+
+    if (!checkPassword) {
+      return res
+        .status(401)
+        .json({ message: 'Email or Password are not correct' });
+    }
+
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
+      expiresIn: '30d',
+    });
+
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: process.env.NODE_ENV === 'development' ? 'strict' : 'none',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.send(user);
   } catch (error) {
     console.error(error);
     res.status(500).json('something went wrong');
