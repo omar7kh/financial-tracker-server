@@ -17,7 +17,7 @@ export const login = async (req: Request, res: Response) => {
         .json({ message: 'Email or Password are not correct' });
     }
 
-    const checkPassword = bcrypt.compare(
+    const checkPassword = await bcrypt.compare(
       req.body.password,
       user.password as string
     );
